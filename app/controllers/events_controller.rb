@@ -5,7 +5,7 @@ class EventsController < ApplicationController
   end
 
   def create
-      print event_params
+      print params.inspect
     if ((event_params[:user]) &&
        (event_params[:type]) &&
        (event_params[:date]))
