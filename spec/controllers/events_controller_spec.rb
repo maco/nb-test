@@ -7,13 +7,9 @@ RSpec.describe EventsController, type: :controller do
             params = { :date => "1985-10-26T09:00:01Z",
                        :user => "Doc",
                        :type => "enter"}
-            #expect {
-            #  post :create, :event => params
-            #}.to change{Event.count}.by(1)
-            #post :create, :event => params
-            post :create, { :date => "1985-10-26T09:00:01Z",
+            expect {post :create, { :date => "1985-10-26T09:00:01Z",
                        :user => "Doc",
-                       :type => "enter"}
+                       :type => "enter"}}.to change{Event.count}.by(1)
             expect(response.content_type).to eq "application/json"
             expect(response.code).to eq "200"
         end
