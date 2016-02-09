@@ -11,11 +11,11 @@ RSpec.describe EventsController, type: :controller do
             #  post :create, :event => params
             #}.to change{Event.count}.by(1)
             #post :create, :event => params
-            post :create, :event => { :date => "1985-10-26T09:00:01Z",
+            post :create, { :date => "1985-10-26T09:00:01Z",
                        :user => "Doc",
                        :type => "enter"}
             expect(response.content_type).to eq "application/json"
-            expect(response.code).to eq 200
+            expect(response.code).to eq "200"
         end
 
         it 'is a valid leave event' do
