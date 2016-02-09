@@ -14,7 +14,7 @@ RSpec.describe EventsController, type: :controller do
             post :create, :event => { :date => "1985-10-26T09:00:01Z",
                        :user => "Doc",
                        :type => "enter"}
-            expect(response.headers['Content-Type']).to eq "application/json; charset=utf-8"
+            expect(response.content_type).to eq "application/json"
             expect(response.code).to eq 200
         end
 
