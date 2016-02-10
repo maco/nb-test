@@ -5,40 +5,52 @@ class EventsController < ApplicationController
   end
 
   def create
-      print params.inspect
-    if ((event_params[:user]) &&
-       (event_params[:type]) &&
-       (event_params[:date]))
+    if (((!event_params[:user]) ||
+       (!event_params[:type]) ||
+       (!event_params[:date]))  || # missing a required field
 
-      valid_options = true
+       ((event_params[:type] == "highfive") &&
+          (! event_params[:otheruser])) || # missing otheruser on highfive
 
-      if ((event_params[:type] == "highfive") &&
-          (! event_params[:otheruser]))
-          valid_options = false
-      end
-      if (event_params[:otheruser] &&
-          (! event_params[:type] == "highfive"))
-          valid_options = false
-      end
-      if ((event_params[:type] == "message") &&
-          (! event_params[:comment]))
-          valid_options = false
-      end
-      if (event_params[:comment] &&
-          (! event_params[:type] == "message"))
-          valid_options = false
-      end
-      print valid_options
-      @event = Event.new(event_params)
-      if @event.save
-        render json: {status: :ok}
-      else
-        render json: {status: :internal_server_error}, status: 500
-      end
-    else
+      (event_params[:otheruser] &&
+          (event_params[:type] != "highfive")) || # has otheruser but isn't highfive
+
+      ((event_params[:type] == "comment") &&
+          (! event_params[:message])) || # comment is missing text
+
+      (event_params[:message] &&
+          (event_params[:type] != "comment"))) # has a message but isn't comment
+
       render json: {status: :bad_request}, status: :bad_request
+    else
+      begin
+        @event = Event.new(event_params)
+        if @event.save
+          render json: {status: :ok}
+        else
+          render json: {status: :internal_server_error}, status: 500
+        end
+      rescue ArgumentError
+        render json: {status: :bad_request}, status: 400
+      end
     end
 
+  end
+
+  def clear
+    Event.all.each do |event|
+      event.destroy
+    end
+    if Event.count == 0
+      render json: {status: :ok}, status: :ok
+    end
+  end
+
+  def show
+    from = params[:from]
+    to = params[:to]
+
+    @events = Event.where(date: from..to).order(date: :asc)
   end
 
   private
