@@ -105,8 +105,14 @@ RSpec.describe EventsController, type: :controller do
 
   context "POST to delete all events" do
     it 'deletes all events' do
+      post :create, { :date => "1985-10-26T09:20:00Z",
+            :user => "Marty",
+            :type => "enter"}
+      post :create, { :date => "1985-10-26T09:25:00Z",
+            :user => "Doc",
+            :type => "comment",
+            :message => "I built a time machine!"}
         expect{post :clear}.to change{Event.count}.to(0)
     end
   end
-
 end

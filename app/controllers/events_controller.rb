@@ -47,10 +47,18 @@ class EventsController < ApplicationController
   end
 
   def show
-    from = params[:from]
-    to = params[:to]
+    if params[:from] < params[:to]
+      from = DateTime.iso8601(params[:from]).to_s(:db)
+      to = DateTime.iso8601(params[:to]) + 1.seconds #make inclusive
+      to = to.to_s(:db)
+    else # catch user error where to/from are reversed
+      from = DateTime.iso8601(params[:to]).to_s(:db)
+      to = DateTime.iso8601(params[:from]) + 1.seconds
+      to = to.to_s(:db)
+    end
 
     @events = Event.where(date: from..to).order(date: :asc)
+
   end
 
   private
