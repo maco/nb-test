@@ -61,41 +61,48 @@ class EventsController < ApplicationController
   end
 
   def show
-    (from, to) = get_to_from(read_params[:from], read_params[:to])
-    @events = Event.where(date: from..to).order(date: :asc)
+    if ((!read_params[:from]) || (!read_params[:to]))
+      render json: {status: :bad_request}, status: :bad_request
+    else
+      (from, to) = get_to_from(read_params[:from], read_params[:to])
+      @events = Event.where(date: from..to).order(date: :asc)
+    end
   end
 
   def summary
-    eventlist = show
-
-    if read_params[:by] == "day"
-      dateformat = "%Y-%m-%d"
-    elsif read_params[:by] == "hour"
-      dateformat = "%Y-%m-%dT%H"
-    elsif read_params[:by] == "minute"
-      dateformat = "%Y-%m-%dT%H:%M"
-    else
+    if ((!read_params[:from]) || (!read_params[:to]) || (!read_params[:by]))
       render json: {status: :bad_request}, status: :bad_request
-    end
+    else
+      eventlist = show
 
-    counts = {}
-    for event in eventlist
-      interval = event[:date].strftime(dateformat)
-      if ! counts[interval]
-        counts[interval] = {}
-        for type in Event.types
-          counts[interval][type[0]] = 0
-        end
+      if read_params[:by] == "day"
+        dateformat = "%Y-%m-%d"
+      elsif read_params[:by] == "hour"
+        dateformat = "%Y-%m-%dT%H"
+      elsif read_params[:by] == "minute"
+        dateformat = "%Y-%m-%dT%H:%M"
+      else
+        render json: {status: :bad_request}, status: :bad_request
       end
-      counts[interval][event.type] += 1
-    end
 
-    @events = []
-    counts.each do |interval, counters|
-      counters['date'] = DateTime.parse(interval).strftime("%FT%TZ")
-      @events << counters
-    end
+      counts = {}
+      for event in eventlist
+        interval = event[:date].strftime(dateformat)
+        if ! counts[interval]
+          counts[interval] = {}
+          for type in Event.types
+            counts[interval][type[0]] = 0
+          end
+        end
+        counts[interval][event.type] += 1
+      end
 
+      @events = []
+      counts.each do |interval, counters|
+        counters['date'] = DateTime.parse(interval).strftime("%FT%TZ")
+        @events << counters
+      end
+    end
   end
 
   private
